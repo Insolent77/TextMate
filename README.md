@@ -4,148 +4,132 @@
 
 ## Русский
 
-TextMate — расширение для Chrome для работы с выделенным текстом с помощью ИИ.
+TextMate — расширение для работы с выделенным текстом с помощью ИИ.
+
+### Поддерживаемые браузеры
+
+| Браузер | Сборка |
+|---|---|
+| Google Chrome | Chromium |
+| Microsoft Edge | Chromium |
+| Opera | Chromium |
+| Mozilla Firefox | Firefox |
+
+Яндекс Браузер отдельно не поддерживается.
 
 ### Возможности
 
 - исправление орфографии, пунктуации и грамматики;
 - перевод на русский язык;
-- упрощение текста;
-- сокращение текста;
-- более вежливая формулировка;
-- официальный стиль;
-- 3 варианта переформулировки;
+- упрощение и сокращение текста;
+- вежливый и официальный стиль;
+- несколько вариантов переформулировки;
 - настраиваемые быстрые действия;
-- компактное popup-окно по клику на иконку расширения;
-- быстрый выбор локального/облачного режима прямо в popup;
-- контекстное меню Chrome;
+- popup по клику на иконку TextMate;
+- контекстное меню браузера;
 - автокопирование результата;
 - локальный режим через Ollama;
 - облачный режим через Gemini или OpenAI-compatible API;
-- отдельные адаптеры для Google Docs, Google Sheets, Word Online, Notion, Gmail и Telegram Web;
+- адаптеры для Google Docs, Google Sheets, Word Online, Notion, Gmail и Telegram Web;
 - кэш одинаковых запросов;
-- гибрид локальных моделей: `qwen3:0.6b` для быстрых действий и `qwen3:1.7b` для редактирования и перевода.
+- локальные модели `qwen3:0.6b` и `qwen3:1.7b`.
 
-Автопроверка при вводе текста пока не используется: все действия запускаются только пользователем.
+### Сборки
 
-### Popup и расширенные настройки
+Chrome, Edge и Opera используют один ZIP:
 
-Обычный клик по иконке **TextMate** открывает компактное окно, где можно:
+`TextMate-v0.7.0-Chromium.zip`
 
-- переключить локальный/облачный режим;
-- выбрать облачного провайдера;
-- посмотреть используемые модели;
-- включить нужные быстрые действия;
-- включить автокопирование;
-- проверить подключение.
+Firefox использует отдельный ZIP:
 
-API-ключи и дополнительные параметры остаются на странице **«Расширенные настройки»**.
+`TextMate-v0.7.0-Firefox.zip`
 
-### Установка для разработки
+Исходный код:
 
-1. Скачайте или клонируйте репозиторий.
-2. Откройте `chrome://extensions`.
-3. Включите «Режим разработчика».
-4. Нажмите «Загрузить распакованное расширение».
-5. Выберите папку репозитория.
-6. После обновления расширения обновите уже открытые вкладки через `F5`.
+`TextMate-v0.7.0-Source.zip`
+
+### Сборка из исходников
+
+```bash
+python build.py
+```
+
+Готовые файлы появятся в папке `dist/`.
 
 ### Локальный режим
-
-Установите Ollama и модели:
 
 ```powershell
 ollama pull qwen3:0.6b
 ollama pull qwen3:1.7b
 ```
 
-Если `qwen3:1.7b` недоступна, TextMate автоматически использует `qwen3:0.6b`.
-
-### Облачный режим
-
-Поддерживаются:
-
-- Gemini API;
-- OpenAI-compatible API;
-- собственный совместимый backend.
-
-API-ключи не находятся в исходном коде. Пользователь вводит их в расширенных настройках расширения, после чего они сохраняются локально через `chrome.storage.local`.
-
 ### Версия
 
-Текущая версия: **0.6.0**.
+Текущая версия: **0.7.0**.
 
 ---
 
 ## English
 
-TextMate is a Chrome extension for AI-powered work with selected text directly on web pages and in online editors.
+TextMate is an AI-powered browser extension for working with selected text.
+
+### Supported browsers
+
+| Browser | Package |
+|---|---|
+| Google Chrome | Chromium |
+| Microsoft Edge | Chromium |
+| Opera | Chromium |
+| Mozilla Firefox | Firefox |
+
+Yandex Browser is not maintained as a separate supported target.
 
 ### Features
 
 - spelling, punctuation and grammar correction;
 - translation to Russian;
-- text simplification;
-- text shortening;
-- more polite wording;
-- more formal wording;
-- 3 rephrasing alternatives;
+- text simplification and shortening;
+- polite and formal rewriting;
+- multiple rephrasing alternatives;
 - configurable quick actions;
-- compact extension popup opened by clicking the TextMate icon;
-- quick local/cloud mode switching directly from the popup;
-- Chrome context menu integration;
-- optional automatic copying of results;
-- local mode powered by Ollama;
-- cloud mode powered by Gemini or any OpenAI-compatible API;
-- dedicated adapters for Google Docs, Google Sheets, Word Online, Notion, Gmail and Telegram Web;
-- caching for repeated requests;
-- hybrid local models: `qwen3:0.6b` for fast transformations and `qwen3:1.7b` for correction and translation.
+- compact TextMate popup;
+- browser context menu integration;
+- optional automatic result copying;
+- local Ollama mode;
+- cloud mode using Gemini or any OpenAI-compatible API;
+- adapters for Google Docs, Google Sheets, Word Online, Notion, Gmail and Telegram Web;
+- repeated-request caching;
+- local `qwen3:0.6b` and `qwen3:1.7b` models.
 
-Automatic checking while typing is not enabled yet. Every action is started manually by the user.
+### Packages
 
-### Popup and advanced settings
+Chrome, Edge and Opera use:
 
-Clicking the **TextMate** extension icon now opens a compact popup where you can:
+`TextMate-v0.7.0-Chromium.zip`
 
-- switch between local and cloud modes;
-- choose a cloud provider;
-- see the active models;
-- configure quick actions;
-- enable automatic copying;
-- test the current connection.
+Firefox uses:
 
-API keys and advanced provider parameters remain available through **Advanced settings**.
+`TextMate-v0.7.0-Firefox.zip`
 
-### Development installation
+Source code:
 
-1. Download or clone this repository.
-2. Open `chrome://extensions`.
-3. Enable **Developer mode**.
-4. Click **Load unpacked**.
-5. Select the repository folder.
-6. After reloading or updating the extension, refresh already opened pages with `F5`.
+`TextMate-v0.7.0-Source.zip`
+
+### Build from source
+
+```bash
+python build.py
+```
+
+Generated packages are placed in `dist/`.
 
 ### Local mode
-
-Install Ollama and the models:
 
 ```powershell
 ollama pull qwen3:0.6b
 ollama pull qwen3:1.7b
 ```
 
-If `qwen3:1.7b` is unavailable, TextMate automatically falls back to `qwen3:0.6b`.
-
-### Cloud mode
-
-Supported options:
-
-- Gemini API;
-- OpenAI-compatible API;
-- your own compatible backend.
-
-API keys are not hardcoded in the source code. Users enter them in the advanced extension settings, and they are stored locally through `chrome.storage.local`.
-
 ### Version
 
-Current version: **0.6.0**.
+Current version: **0.7.0**.
