@@ -72,8 +72,6 @@
         return JSON.parse(candidate);
       } catch {}
 
-      // Частые мелкие ошибки маленьких локальных моделей:
-      // trailing comma перед }/] и типографские кавычки.
       const repaired = candidate
         .replace(/[“”]/g, '"')
         .replace(/[‘’]/g, "'")
@@ -85,6 +83,41 @@
     }
 
     return null;
+  }
+
+  function normalizeForMatch(value) {
+    return String(value ?? "")
+      .replace(/\r\n/g, "\n")
+      .replace(/[“”«»]/g, '"')
+      .replace(/[‘’]/g, "'")
+      .replace(/\u00A0/g, " ")
+      .trim();
+  }
+
+  function sanitizeCorrectionErrors(sourceText, correctedText, items) {
+    const source = normalizeForMatch(sourceText);
+    const corrected = normalizeForMatch(correctedText);
+
+    if (!Array.isArray(items)) return [];
+
+    return items
+      .slice(0, 100)
+      .map((item) => ({
+        original: normalizeForMatch(item?.original),
+        correction: normalizeForMatch(item?.correction),
+        explanation: String(item?.explanation ?? "").trim()
+      }))
+      .filter((item) => {
+        const original = item.original;
+        const correction = item.correction;
+
+        if (!original || !source.includes(original)) return false;
+        if (original === correction) return false;
+        if (correction && !corrected.includes(correction)) return false;
+        if (!correction && corrected.includes(original)) return false;
+
+        return true;
+      });
   }
 
   function plainModelText(text) {
@@ -122,26 +155,21 @@
         temperature: 0,
         numPredict: 320,
         schema: correctionSchema,
-        system: "Ты профессиональный редактор русского языка. Исправляй только реальные орфографические, пунктуационные, грамматические и явные стилистические ошибки. Сохраняй смысл, тон, имена, факты, форматирование и абзацы. Не добавляй новую информацию. Верни только JSON вида {\"correctedText\":\"...\",\"errors\":[{\"original\":\"...\",\"correction\":\"...\",\"explanation\":\"...\"}]}.",
+        system: "Ты профессиональный редактор русского языка. Исправляй только реальные орфографические, пунктуационные, грамматические и явные стилистические ошибки. Сохраняй смысл, тон, имена, факты, форматирование и абзацы. Не добавляй новую информацию. В errors указывай ТОЛЬКО изменения, которые действительно сделаны: поле original должно быть точной подстрокой исходного текста, а correction — точной подстрокой correctedText (кроме удаления). Никогда не выдумывай служебные токены, команды или фрагменты, которых нет в исходном тексте. Если правок нет, errors должен быть пустым массивом. Верни только JSON вида {\"correctedText\":\"...\",\"errors\":[{\"original\":\"...\",\"correction\":\"...\",\"explanation\":\"...\"}]}. ",
         user: `Проверь текст и верни исправленную версию и список правок.\n\nТЕКСТ:\n${text}`
       });
       const parsed = tryParseJson(result.text);
 
       if (parsed && typeof parsed.correctedText === "string") {
+        const correctedText = String(parsed.correctedText);
         return {
-          correctedText: parsed.correctedText,
-          errors: Array.isArray(parsed.errors) ? parsed.errors.slice(0, 100).map((item) => ({
-            original: String(item?.original ?? ""),
-            correction: String(item?.correction ?? ""),
-            explanation: String(item?.explanation ?? "")
-          })) : [],
+          correctedText,
+          errors: sanitizeCorrectionErrors(text, correctedText, parsed.errors),
           model: result.model,
           provider: result.provider
         };
       }
 
-      // Если модель нарушила JSON-формат, не падаем:
-      // повторяем запрос в максимально простом текстовом формате.
       const fallback = await P.chat({
         quality: "quality",
         temperature: 0,
@@ -227,7 +255,6 @@
 
     if (numbered.length >= 2) return numbered.slice(0, 3);
 
-    // Fallback for models that put variants on one line separated with semicolons.
     const separated = raw.split(/\s*;\s*/).map((item) => item.trim()).filter(Boolean);
     return separated.length >= 2 ? separated.slice(0, 3) : [raw];
   }
@@ -242,8 +269,6 @@
         quality: "fast",
         temperature: isRephrase ? 0.45 : 0.05,
         numPredict: isRephrase ? 180 : 120,
-        // В быстрых действиях намеренно НЕ используем JSON schema.
-        // Маленькие локальные модели отвечают так быстрее и стабильнее.
         system: isRephrase
           ? `${TRANSFORMS[action]} Не добавляй факты от себя. Верни ровно 3 варианта, каждый с новой строки. Без пояснений, заголовков и JSON.`
           : `${TRANSFORMS[action]} Не добавляй факты от себя. Верни только готовый переписанный текст. Без пояснений, кавычек, заголовков и JSON.`,
