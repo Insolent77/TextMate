@@ -38,7 +38,6 @@ chrome.runtime.onStartup.addListener(() => {
   AITextProviders.warmLocalModels();
 });
 
-chrome.action.onClicked.addListener(() => chrome.runtime.openOptionsPage());
 AITextContextMenu.install();
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
