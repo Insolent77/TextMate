@@ -1,0 +1,18 @@
+# Local/editor files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Archives/build outputs
+*.zip
+*.rar
+dist/
+build/
+
+# Environment/secrets
+.env
+.env.*
+*.pem
+*.key
+secrets.*
