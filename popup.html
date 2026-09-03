@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>TextMate</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main class="popup">
+    <header class="top">
+      <div>
+        <h1>TextMate</h1>
+        <p>AI-помощник для текста</p>
+      </div>
+      <span class="version">v0.6.0</span>
+    </header>
+
+    <section class="card">
+      <label class="label" for="runMode">Режим работы</label>
+      <select id="runMode">
+        <option value="local">💻 Локальный — Ollama</option>
+        <option value="cloud">☁ Облачный</option>
+      </select>
+
+      <div id="localSummary" class="summary">
+        <div><span>Быстрая</span><strong>qwen3:0.6b</strong></div>
+        <div><span>Качественная</span><strong>qwen3:1.7b</strong></div>
+      </div>
+
+      <div id="cloudSummary" class="hidden">
+        <label class="label compact" for="cloudProvider">Провайдер</label>
+        <select id="cloudProvider">
+          <option value="gemini">Gemini API</option>
+          <option value="openai">OpenAI-compatible</option>
+        </select>
+        <div id="cloudModels" class="summary"></div>
+      </div>
+
+      <button id="testConnection" class="secondary full" type="button">Проверить подключение</button>
+      <p id="connectionStatus" class="status" role="status"></p>
+    </section>
+
+    <section class="card">
+      <div class="sectionTitle">Быстрые действия</div>
+      <div class="checks">
+        <label><input type="checkbox" data-action="edit"> Редактировать</label>
+        <label><input type="checkbox" data-action="translate"> Перевод</label>
+        <label><input type="checkbox" data-action="simplify"> Упростить</label>
+        <label><input type="checkbox" data-action="shorten"> Короче</label>
+        <label><input type="checkbox" data-action="polite"> Вежливее</label>
+        <label><input type="checkbox" data-action="formal"> Официальнее</label>
+        <label><input type="checkbox" data-action="rephrase"> Переформулировать</label>
+      </div>
+
+      <label class="toggleRow">
+        <input id="autoCopyResult" type="checkbox">
+        <span>
+          <strong>Автокопирование</strong>
+          <small>Копировать готовый результат автоматически</small>
+        </span>
+      </label>
+    </section>
+
+    <button id="advancedSettings" class="primary full" type="button">Расширенные настройки</button>
+    <p id="saveStatus" class="saved">Настройки сохраняются автоматически</p>
+  </main>
+
+  <script src="popup.js"></script>
+</body>
+</html>
