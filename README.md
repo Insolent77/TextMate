@@ -38,15 +38,15 @@ TextMate — расширение для работы с выделенным т
 
 Chrome, Edge и Opera используют один ZIP:
 
-`TextMate-v0.9.1-Chromium.zip`
+`TextMate-v0.9.2-Chromium.zip`
 
 Firefox использует отдельный ZIP:
 
-`TextMate-v0.9.1-Firefox.zip`
+`TextMate-v0.9.2-Firefox.zip`
 
 Исходный код:
 
-`TextMate-v0.9.1-Source.zip`
+`TextMate-v0.9.2-Source.zip`
 
 ### Сборка из исходников
 
@@ -65,7 +65,7 @@ ollama pull qwen3:1.7b
 
 ### Версия
 
-Текущая версия: **0.9.1**.
+Текущая версия: **0.9.2**.
 
 ---
 
@@ -105,15 +105,15 @@ Yandex Browser is not maintained as a separate supported target.
 
 Chrome, Edge and Opera use:
 
-`TextMate-v0.9.1-Chromium.zip`
+`TextMate-v0.9.2-Chromium.zip`
 
 Firefox uses:
 
-`TextMate-v0.9.1-Firefox.zip`
+`TextMate-v0.9.2-Firefox.zip`
 
 Source code:
 
-`TextMate-v0.9.1-Source.zip`
+`TextMate-v0.9.2-Source.zip`
 
 ### Build from source
 
@@ -132,7 +132,7 @@ ollama pull qwen3:1.7b
 
 ### Version
 
-Current version: **0.9.1**.
+Current version: **0.9.2**.
 
 
 ## Исправления v0.9.1 / Fixes in v0.9.1
@@ -242,3 +242,16 @@ TextMate v0.9.1 adds direct setup links to the extension settings:
 - LibreOffice Russian dictionary: https://github.com/LibreOffice/dictionaries/tree/master/ru_RU
 
 For OpenAI-compatible providers, the API URL and API key depend on the selected provider.
+
+
+## v0.9.2: correction result validation
+
+TextMate no longer blindly trusts the AI-provided `errors` array.
+
+Each reported correction is validated before it is shown:
+- `original` must actually occur in the source text;
+- `correction` must occur in the corrected text (unless it is a deletion);
+- unchanged items are discarded;
+- fabricated service tokens or unrelated fragments are therefore not shown as corrections.
+
+Also fixes the asynchronous no-AI context-menu correction call.
