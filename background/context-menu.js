@@ -13,14 +13,29 @@
     return Boolean(chrome.contextMenus?.create && chrome.contextMenus?.onClicked);
   }
 
-  function create() {
+  async function create() {
     if (!available()) return;
-    chrome.contextMenus.removeAll(() => {
-      chrome.contextMenus.create({ id: "ai-text-tools", title: "AI: работа с текстом", contexts: ["selection"] });
-      for (const [id, title] of ACTIONS) {
-        chrome.contextMenus.create({ id: `ai-${id}`, parentId: "ai-text-tools", title, contexts: ["selection"] });
-      }
+
+    try {
+      await globalThis.TextMateCompat.removeAllContextMenus();
+    } catch (error) {
+      console.warn("TextMate: не удалось очистить контекстное меню", error);
+    }
+
+    chrome.contextMenus.create({
+      id: "ai-text-tools",
+      title: "TextMate: работа с текстом",
+      contexts: ["selection"]
     });
+
+    for (const [id, title] of ACTIONS) {
+      chrome.contextMenus.create({
+        id: `ai-${id}`,
+        parentId: "ai-text-tools",
+        title,
+        contexts: ["selection"]
+      });
+    }
   }
 
   function install() {
