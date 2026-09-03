@@ -1,10 +1,13 @@
-importScripts(
-  "background/logger.js",
-  "background/cache.js",
-  "background/providers.js",
-  "background/actions.js",
-  "background/context-menu.js"
-);
+if (typeof importScripts === "function" && !globalThis.AITextProviders) {
+  importScripts(
+    "compat.js",
+    "background/logger.js",
+    "background/cache.js",
+    "background/providers.js",
+    "background/actions.js",
+    "background/context-menu.js"
+  );
+}
 
 const REQUEST_TIMEOUT_MS = 35000;
 
