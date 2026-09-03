@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "TextMate",
-  "version": "0.8.1",
-  "description": "AI-инструменты для выделенного текста: локальный Ollama или облачные провайдеры, перевод, редактирование и адаптеры онлайн-редакторов.",
+  "version": "0.9.1",
+  "description": "TextMate: исправление, перевод и переписывание текста через Ollama, TextMate Global, OpenAI, Gemini или без AI.",
   "permissions": [
     "storage",
     "clipboardWrite",
@@ -13,7 +13,8 @@
     "http://localhost:11434/*",
     "http://127.0.0.1:11434/*",
     "https://raw.githubusercontent.com/*",
-    "https://cdn.jsdelivr.net/*"
+    "https://cdn.jsdelivr.net/*",
+    "https://api.openai.com/*"
   ],
   "background": {
     "service_worker": "background.js"

@@ -225,3 +225,18 @@ button:disabled {
   opacity: .5;
   cursor: default;
 }
+
+.textLink {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  opacity: .82;
+}
+
+.textLink:hover {
+  opacity: 1;
+}

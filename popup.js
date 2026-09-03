@@ -24,6 +24,10 @@ async function restore() {
     "aiProvider",
     "cloudProvider",
     "geminiApiKey",
+    "textmateCloudUrl",
+    "officialOpenaiApiKey",
+    "officialOpenaiFastModel",
+    "officialOpenaiQualityModel",
     "geminiModel",
     "geminiFastModel",
     "geminiQualityModel",
@@ -41,9 +45,13 @@ async function restore() {
       ? "cloud"
       : "local");
 
-  cloudProvider.value = settings.cloudProvider || (
-    settings.aiProvider === "openai" ? "openai" : "gemini"
-  );
+  const restoredProvider =
+    settings.cloudProvider === "openai"
+      ? "openai-compatible"
+      : settings.cloudProvider || (
+          settings.aiProvider === "openai" ? "openai-compatible" : "textmate"
+        );
+  cloudProvider.value = restoredProvider;
 
   const quick = Array.isArray(settings.quickTextActions)
     ? settings.quickTextActions
@@ -88,7 +96,15 @@ function renderCloudModels() {
   let quality = "";
   let configured = false;
 
-  if (provider === "gemini") {
+  if (provider === "textmate") {
+    fast = "Workers AI";
+    quality = "Workers AI";
+    configured = Boolean(settings.textmateCloudUrl);
+  } else if (provider === "openai-official") {
+    fast = settings.officialOpenaiFastModel || "gpt-5.6-luna";
+    quality = settings.officialOpenaiQualityModel || "gpt-5.6-terra";
+    configured = Boolean(settings.officialOpenaiApiKey);
+  } else if (provider === "gemini") {
     fast = settings.geminiFastModel || settings.geminiModel || "gemini-3.6-flash";
     quality = settings.geminiQualityModel || settings.geminiModel || "gemini-3.6-flash";
     configured = Boolean(settings.geminiApiKey);

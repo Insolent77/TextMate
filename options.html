@@ -36,6 +36,10 @@
 
       <div id="rulesSettings" class="provider-settings card hidden">
         <h3>Исправление текста без AI</h3>
+        <p class="providerHelp">
+          <a href="https://github.com/LibreOffice/dictionaries/tree/master/ru_RU" target="_blank" rel="noopener noreferrer">Русский словарь LibreOffice ↗</a>
+          <span>API-ключ не нужен.</span>
+        </p>
         <p>Текст не отправляется в AI или на сервер обработки. При первом использовании TextMate скачивает открытый русский словарь LibreOffice (~4 МБ) и сохраняет его локально в браузере.</p>
         <div class="notice">
           <strong>В этом режиме доступно только действие «Редактировать».</strong>
@@ -47,11 +51,55 @@
       <div id="cloudSettings" class="provider-settings card hidden">
         <label for="cloudProvider">Облачный провайдер</label>
         <select id="cloudProvider">
+          <option value="textmate">🌐 TextMate Global — Cloudflare Workers AI</option>
+          <option value="openai-official">OpenAI API — официальный</option>
           <option value="gemini">Gemini API</option>
-          <option value="openai">OpenAI-compatible API / свой сервер</option>
+          <option value="openai-compatible">OpenAI-compatible API / свой сервер</option>
         </select>
 
+        <div id="textmateSettings" class="hidden">
+          <h3>TextMate Global</h3>
+          <p class="providerHelp">
+            <a href="https://developers.cloudflare.com/workers-ai/get-started/" target="_blank" rel="noopener noreferrer">Cloudflare Workers AI ↗</a>
+            <span>Обычному пользователю TextMate API-ключ не нужен.</span>
+          </p>
+          <p class="muted">Публичный облачный режим TextMate через собственный Cloudflare Worker и Workers AI.</p>
+          <label for="textmateCloudUrl">Адрес TextMate Cloud</label>
+          <input id="textmateCloudUrl" type="url" spellcheck="false" placeholder="https://textmate-global.example.workers.dev">
+          <div class="notice">
+            <strong>Для владельца расширения.</strong>
+            <p>После развёртывания Worker этот адрес можно зафиксировать в сборке, и обычным пользователям ничего вводить не потребуется.</p>
+            <p>В этом режиме выделенный текст отправляется в ваш Cloudflare Worker для обработки Workers AI.</p>
+          </div>
+        </div>
+
+        <div id="officialOpenaiSettings" class="hidden">
+          <h3>Официальный OpenAI API</h3>
+          <p class="providerHelp">
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">Получить OpenAI API-ключ ↗</a>
+            <span>Нужен отдельный API-аккаунт; ChatGPT Plus сам по себе ключ не даёт.</span>
+          </p>
+          <label for="officialOpenaiApiKey">OpenAI API-ключ</label>
+          <div class="key-row">
+            <input id="officialOpenaiApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="sk-…">
+            <button id="toggleOfficialOpenai" type="button">Показать</button>
+          </div>
+          <label for="officialOpenaiFastModel">Быстрая модель</label>
+          <input id="officialOpenaiFastModel" type="text" spellcheck="false" value="gpt-5.6-luna">
+          <label for="officialOpenaiQualityModel">Качественная модель</label>
+          <input id="officialOpenaiQualityModel" type="text" spellcheck="false" value="gpt-5.6-terra">
+          <div class="notice">
+            <p>Это именно OpenAI API, а не подписка ChatGPT Plus. Ключ хранится локально в данных расширения и отправляется только в <code>api.openai.com</code>.</p>
+            <p>Доступность OpenAI API зависит от правил и регионов OpenAI. TextMate не обходит региональные ограничения провайдера.</p>
+          </div>
+        </div>
+
         <div id="geminiSettings">
+          <h3>Gemini API</h3>
+          <p class="providerHelp">
+            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer">Получить Gemini API-ключ ↗</a>
+            <span>Ключ создаётся в Google AI Studio.</span>
+          </p>
           <label for="geminiApiKey">Gemini API-ключ</label>
           <div class="key-row">
             <input id="geminiApiKey" type="password" autocomplete="off" spellcheck="false" placeholder="AIza…">
@@ -63,7 +111,12 @@
           <input id="geminiQualityModel" type="text" spellcheck="false" value="gemini-3.6-flash">
         </div>
 
-        <div id="openaiSettings" class="hidden">
+        <div id="openaiCompatibleSettings" class="hidden">
+          <h3>OpenAI-compatible API</h3>
+          <p class="providerHelp providerHelpStack">
+            <span>Ключ и API URL выдаёт выбранный вами совместимый провайдер.</span>
+            <a href="https://developers.cloudflare.com/ai-gateway/usage/universal/" target="_blank" rel="noopener noreferrer">Cloudflare AI Gateway ↗</a>
+          </p>
           <label for="openaiBaseUrl">API URL</label>
           <input id="openaiBaseUrl" type="url" spellcheck="false" placeholder="https://api.example.com/v1">
           <label for="openaiApiKey">API-ключ / токен</label>

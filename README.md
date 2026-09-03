@@ -1,179 +1,244 @@
 # TextMate
 
-**TextMate** — браузерное расширение для редактирования, перевода и переформулирования выделенного текста прямо на странице.
+[Русский](#русский) | [English](#english)
 
-Поддерживает локальный AI через Ollama, облачные модели и отдельную проверку русского текста без AI.
+## Русский
 
-## Возможности
+TextMate — расширение для работы с выделенным текстом с помощью ИИ.
 
-- исправление орфографии, пунктуации, грамматики и стилистики;
-- перевод выделенного текста на русский язык;
+### Поддерживаемые браузеры
+
+| Браузер | Сборка |
+|---|---|
+| Google Chrome | Chromium |
+| Microsoft Edge | Chromium |
+| Opera | Chromium |
+| Mozilla Firefox | Firefox |
+
+Яндекс Браузер отдельно не поддерживается.
+
+### Возможности
+
+- исправление орфографии, пунктуации и грамматики;
+- перевод на русский язык;
 - упрощение и сокращение текста;
-- более вежливый или официальный стиль;
-- 3 варианта переформулировки;
-- работа с обычным текстом и редактируемыми полями;
+- вежливый и официальный стиль;
+- несколько вариантов переформулировки;
+- настраиваемые быстрые действия;
+- popup по клику на иконку TextMate;
 - контекстное меню браузера;
-- автоматическое копирование результата;
-- настройка быстрых действий;
-- Chrome / Chromium и Firefox.
+- автокопирование результата;
+- локальный режим через Ollama;
+- облачный режим через Gemini или OpenAI-compatible API;
+- адаптеры для Google Docs, Google Sheets, Word Online, Notion, Gmail и Telegram Web;
+- кэш одинаковых запросов;
+- локальные модели `qwen3:0.6b` и `qwen3:1.7b`.
 
-## Режимы работы
+### Сборки
 
-### 1. Локальный AI — Ollama
+Chrome, Edge и Opera используют один ZIP:
 
-Текст обрабатывается локально на компьютере пользователя.
+`TextMate-v0.9.1-Chromium.zip`
 
-Используются две модели:
+Firefox использует отдельный ZIP:
+
+`TextMate-v0.9.1-Firefox.zip`
+
+Исходный код:
+
+`TextMate-v0.9.1-Source.zip`
+
+### Сборка из исходников
+
+```bash
+python build.py
+```
+
+Готовые файлы появятся в папке `dist/`.
+
+### Локальный режим
 
 ```powershell
 ollama pull qwen3:0.6b
 ollama pull qwen3:1.7b
 ```
 
-- `qwen3:0.6b` — быстрые преобразования;
-- `qwen3:1.7b` — редактирование и перевод;
-- если `1.7b` недоступна, используется `0.6b`.
+### Версия
 
-### 2. Облачный AI
+Текущая версия: **0.9.1**.
 
-Поддерживаются:
+---
 
-- Gemini API;
-- OpenAI-compatible API;
-- собственный совместимый сервер.
+## English
 
-Можно отдельно указать быструю и качественную модели.
+TextMate is an AI-powered browser extension for working with selected text.
 
-### 3. Без AI — русский язык
+### Supported browsers
 
-Начиная с **v0.8.1** TextMate умеет проверять русский текст без языковой модели.
+| Browser | Package |
+|---|---|
+| Google Chrome | Chromium |
+| Microsoft Edge | Chromium |
+| Opera | Chromium |
+| Mozilla Firefox | Firefox |
 
-Используется открытый русский Hunspell-словарь LibreOffice.
+Yandex Browser is not maintained as a separate supported target.
 
-Режим умеет:
+### Features
 
-- находить орфографические опечатки по словарю;
-- исправлять уверенные опечатки;
-- исправлять типичные ошибки;
-- убирать лишние пробелы;
-- исправлять базовые ошибки пунктуации;
-- исправлять регистр начала предложения;
-- удалять случайные повторы слов.
+- spelling, punctuation and grammar correction;
+- translation to Russian;
+- text simplification and shortening;
+- polite and formal rewriting;
+- multiple rephrasing alternatives;
+- configurable quick actions;
+- compact TextMate popup;
+- browser context menu integration;
+- optional automatic result copying;
+- local Ollama mode;
+- cloud mode using Gemini or any OpenAI-compatible API;
+- adapters for Google Docs, Google Sheets, Word Online, Notion, Gmail and Telegram Web;
+- repeated-request caching;
+- local `qwen3:0.6b` and `qwen3:1.7b` models.
 
-При первом использовании скачиваются только файлы словаря `ru_RU.aff` и `ru_RU.dic` — около 4 МБ. Они сохраняются в IndexedDB расширения, после чего используется локальная копия.
+### Packages
 
-**Выделенный пользовательский текст в этом режиме никуда не отправляется.**
+Chrome, Edge and Opera use:
 
-В режиме без AI доступно только действие **«Редактировать»**.
+`TextMate-v0.9.1-Chromium.zip`
 
-## Установка в Chrome / Chromium
+Firefox uses:
 
-1. Скачайте Chromium-сборку.
-2. Распакуйте ZIP.
-3. Откройте `chrome://extensions`.
-4. Включите **Режим разработчика**.
-5. Нажмите **Загрузить распакованное расширение**.
-6. Выберите папку TextMate.
+`TextMate-v0.9.1-Firefox.zip`
 
-После обновления расширения обновите уже открытые вкладки через `F5`.
+Source code:
 
-## Firefox
+`TextMate-v0.9.1-Source.zip`
 
-Для Firefox используется отдельный `manifest.firefox.json`.
-
-Собрать обе версии можно командой:
+### Build from source
 
 ```bash
 python build.py
 ```
 
-В `dist` появятся:
+Generated packages are placed in `dist/`.
 
-```text
-TextMate-vX.X.X-Chromium.zip
-TextMate-vX.X.X-Firefox.zip
+### Local mode
+
+```powershell
+ollama pull qwen3:0.6b
+ollama pull qwen3:1.7b
 ```
 
-## Управление
+### Version
 
-Выделите текст на странице. Возле выделения появятся доступные действия.
+Current version: **0.9.1**.
 
-Основные действия:
 
-- **Редактировать**;
-- **Перевод**;
-- **⋯** — дополнительные действия.
+## Исправления v0.9.1 / Fixes in v0.9.1
 
-Дополнительные:
+- исправлено падение «Не удалось разобрать ответ модели»;
+- JSON от локальной модели разбирается более устойчиво;
+- если структурированный ответ всё равно повреждён, TextMate автоматически повторяет запрос обычным текстом;
+- для Gemini JSON-режим теперь используется только там, где он действительно нужен.
 
-- Упростить;
-- Сделать короче;
-- Сделать вежливее;
-- Сделать официальнее;
-- Переформулировать.
+- fixed “Could not parse model response” errors;
+- more tolerant parsing of local model JSON responses;
+- automatic plain-text retry when structured output is malformed;
+- Gemini JSON mode is now enabled only for structured actions.
 
-Набор быстрых действий настраивается в popup расширения.
 
-## Горячие клавиши
+## Режим без AI
 
-- `Alt + R` — заново обработать текущее выделение;
-- `Esc` — закрыть окно результата.
+В TextMate есть третий режим: **«Без AI — проверка русского текста»**.
 
-## Поддерживаемые редакторы
+В нём:
 
-Есть отдельные адаптеры для:
+- текст не отправляется в Ollama, Gemini, OpenAI-compatible API или на другие серверы;
+- доступна только кнопка **«Редактировать»**;
+- перевод, упрощение, сокращение, изменение тона и переформулирование скрываются;
+- проверяются только русскоязычные тексты;
+- используются локальные детерминированные правила: частые опечатки, пробелы, базовая пунктуация, заглавные буквы и повтор слов.
 
-- Google Docs / Sheets;
-- Word Online;
-- Notion;
-- Gmail;
-- Telegram Web.
+Этот режим быстрее и приватнее, но слабее AI в сложной грамматике, стилистике и контексте.
 
-На остальных сайтах используется универсальный адаптер.
+---
 
-## Приватность
+## No-AI mode
 
-Поведение зависит от выбранного режима:
+TextMate also includes **No AI — Russian text correction** mode.
 
-- **Без AI** — пользовательский текст не отправляется в AI или на сервер обработки;
-- **Ollama** — запросы идут только в локальный Ollama API;
-- **Облачный AI** — выделенный текст отправляется выбранному пользователем AI-провайдеру.
+In this mode:
 
-API-ключи и настройки сохраняются в локальном хранилище расширения.
+- text is never sent to Ollama, Gemini, OpenAI-compatible APIs, or other servers;
+- only the **Edit** action is available;
+- translation, simplification, shortening, tone changes, and rephrasing are hidden;
+- only predominantly Russian text is processed;
+- correction uses deterministic local rules for common typos, spacing, basic punctuation, capitalization, and repeated words.
 
-## Русский словарь
+This mode is faster and fully private, but intentionally less capable than AI for complex grammar, style, and context.
 
-Источник: [LibreOffice Dictionaries — ru_RU](https://github.com/LibreOffice/dictionaries/tree/master/ru_RU).
 
-TextMate загружает только словарные данные `.aff` и `.dic`, а не удалённый JavaScript. Подробности — в `THIRD_PARTY_NOTICES.md`.
+## Словарная проверка без AI / Dictionary spellcheck without AI
 
-## Структура проекта
+В v0.9.1 режим **«Без AI — русский язык»** использует русский Hunspell-словарь LibreOffice.
 
-```text
-background.js
-background/
-  actions.js
-  cache.js
-  context-menu.js
-  logger.js
-  providers.js
-  rules.js
-content.js
-content/
-  adapters.js
-  runtime.js
-compat.js
-manifest.json
-manifest.firefox.json
-options.html
-options.css
-options.js
-popup.html
-popup.css
-popup.js
-build.py
-```
+- при первом использовании скачиваются только данные словаря (`ru_RU.aff` и `ru_RU.dic`, около 4 МБ);
+- словарь сохраняется в IndexedDB расширения;
+- последующие проверки используют локальную копию;
+- выделенный пользовательский текст никуда не отправляется;
+- удалённый JavaScript не загружается и не выполняется.
 
-## Версия
+In v0.9.1 **No AI — Russian** mode uses the LibreOffice Russian Hunspell dictionary.
 
-Текущая версия: **0.8.1**.
+- only dictionary data (`ru_RU.aff` and `ru_RU.dic`, about 4 MB) is downloaded on first use;
+- it is cached in the extension's IndexedDB;
+- later checks use the local cached copy;
+- selected user text is never uploaded;
+- no remote JavaScript is downloaded or executed.
+
+
+## v0.9.1: OpenAI API + TextMate Global
+
+Cloud AI now supports four explicit providers:
+
+- **TextMate Global** — public TextMate backend on Cloudflare Workers AI; end users do not need an AI API key.
+- **OpenAI API** — official `api.openai.com` with the user's own API key.
+- **Gemini API**.
+- **OpenAI-compatible** — custom/self-hosted endpoints.
+
+### Official OpenAI API
+
+The API key is stored in extension local storage and is sent only to OpenAI's API endpoint.
+It is separate from a ChatGPT Plus subscription. Availability is subject to OpenAI's API terms and supported regions.
+
+Default model fields:
+- Fast: `gpt-5.6-luna`
+- Quality: `gpt-5.6-terra`
+
+Both are editable.
+
+### TextMate Global
+
+`cloudflare-worker/` contains the backend template:
+
+TextMate → Cloudflare Worker → Cloudflare Workers AI.
+
+Default Workers AI models:
+- Fast: `@cf/zai-org/glm-4.7-flash`
+- Quality: `@cf/google/gemma-4-26b-a4b-it`
+
+The Worker includes a per-installation rate limit and input-size limits and does not log user text in application code.
+
+
+## Provider setup links
+
+TextMate v0.9.1 adds direct setup links to the extension settings:
+
+- Ollama download: https://ollama.com/download
+- OpenAI API keys: https://platform.openai.com/api-keys
+- Gemini API keys: https://aistudio.google.com/app/apikey
+- Cloudflare Workers AI: https://developers.cloudflare.com/workers-ai/get-started/
+- LibreOffice Russian dictionary: https://github.com/LibreOffice/dictionaries/tree/master/ru_RU
+
+For OpenAI-compatible providers, the API URL and API key depend on the selected provider.

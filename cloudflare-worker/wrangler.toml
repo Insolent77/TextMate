@@ -1,0 +1,19 @@
+name = "textmate-global"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+[ai]
+binding = "AI"
+
+[vars]
+FAST_MODEL = "@cf/zai-org/glm-4.7-flash"
+QUALITY_MODEL = "@cf/google/gemma-4-26b-a4b-it"
+MAX_USER_CHARS = "16000"
+
+[[ratelimits]]
+name = "TEXTMATE_RATE_LIMITER"
+namespace_id = "1001"
+
+  [ratelimits.simple]
+  limit = 30
+  period = 60

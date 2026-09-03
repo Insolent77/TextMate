@@ -8,10 +8,18 @@ restore();
 async function restore() {
   const s = await chrome.storage.local.get([
     "runMode", "aiProvider", "geminiApiKey", "geminiModel", "geminiFastModel", "geminiQualityModel",
-    "cloudProvider", "openaiBaseUrl", "openaiApiKey", "openaiFastModel", "openaiQualityModel"
+    "cloudProvider",
+    "officialOpenaiApiKey", "officialOpenaiFastModel", "officialOpenaiQualityModel",
+    "openaiBaseUrl", "openaiApiKey", "openaiFastModel", "openaiQualityModel",
+    "textmateCloudUrl"
   ]);
   runMode.value = s.runMode || (s.aiProvider === "gemini" || s.geminiApiKey ? "cloud" : "local");
-  cloudProvider.value = s.cloudProvider || "gemini";
+  const restoredProvider = s.cloudProvider === "openai" ? "openai-compatible" : (s.cloudProvider || "textmate");
+  cloudProvider.value = restoredProvider;
+  $("#textmateCloudUrl").value = s.textmateCloudUrl || "";
+  $("#officialOpenaiApiKey").value = s.officialOpenaiApiKey || "";
+  $("#officialOpenaiFastModel").value = s.officialOpenaiFastModel || "gpt-5.6-luna";
+  $("#officialOpenaiQualityModel").value = s.officialOpenaiQualityModel || "gpt-5.6-terra";
   $("#geminiApiKey").value = s.geminiApiKey || "";
   $("#geminiFastModel").value = s.geminiFastModel || s.geminiModel || "gemini-3.6-flash";
   $("#geminiQualityModel").value = s.geminiQualityModel || s.geminiModel || "gemini-3.6-flash";
@@ -36,11 +44,13 @@ function updateVisibility() {
   $("#test").classList.toggle("hidden", rules);
   $("#clearCache").classList.toggle("hidden", rules);
 
-  const gemini = cloudProvider.value === "gemini";
-  $("#geminiSettings").classList.toggle("hidden", !gemini);
-  $("#openaiSettings").classList.toggle("hidden", gemini);
+  const provider = cloudProvider.value;
+  $("#textmateSettings").classList.toggle("hidden", provider !== "textmate");
+  $("#officialOpenaiSettings").classList.toggle("hidden", provider !== "openai-official");
+  $("#geminiSettings").classList.toggle("hidden", provider !== "gemini");
+  $("#openaiCompatibleSettings").classList.toggle("hidden", provider !== "openai-compatible");
 
-  if (rules) showStatus("Режим без AI работает полностью офлайн.");
+  if (rules) showStatus("Режим без AI работает локально после загрузки словаря.");
 }
 
 function togglePassword(inputSelector, button) {
@@ -50,6 +60,7 @@ function togglePassword(inputSelector, button) {
   button.textContent = visible ? "Показать" : "Скрыть";
 }
 $("#toggleGemini").addEventListener("click", (e) => togglePassword("#geminiApiKey", e.currentTarget));
+$("#toggleOfficialOpenai").addEventListener("click", (e) => togglePassword("#officialOpenaiApiKey", e.currentTarget));
 $("#toggleOpenai").addEventListener("click", (e) => togglePassword("#openaiApiKey", e.currentTarget));
 
 $("#settings").addEventListener("submit", async (event) => {
@@ -96,6 +107,10 @@ async function save() {
       runMode.value === "cloud" ? cloudProvider.value :
       "rules",
     ollamaModel: "qwen3:0.6b",
+    textmateCloudUrl: $("#textmateCloudUrl").value.trim(),
+    officialOpenaiApiKey: $("#officialOpenaiApiKey").value.trim(),
+    officialOpenaiFastModel: $("#officialOpenaiFastModel").value.trim() || "gpt-5.6-luna",
+    officialOpenaiQualityModel: $("#officialOpenaiQualityModel").value.trim() || "gpt-5.6-terra",
     geminiApiKey: $("#geminiApiKey").value.trim(),
     geminiFastModel: $("#geminiFastModel").value.trim() || "gemini-3.6-flash",
     geminiQualityModel: $("#geminiQualityModel").value.trim() || "gemini-3.6-flash",
@@ -104,8 +119,25 @@ async function save() {
     openaiFastModel: $("#openaiFastModel").value.trim(),
     openaiQualityModel: $("#openaiQualityModel").value.trim()
   };
-  if (data.runMode === "cloud" && data.cloudProvider === "gemini" && !data.geminiApiKey) throw new Error("Введите Gemini API-ключ.");
-  if (data.runMode === "cloud" && data.cloudProvider === "openai") {
+  if (data.runMode === "cloud" && data.cloudProvider === "textmate") {
+    if (!data.textmateCloudUrl) throw new Error("Укажите адрес TextMate Cloudflare Worker.");
+    const origin = new URL(data.textmateCloudUrl).origin + "/*";
+    const granted = await chrome.permissions.request({ origins: [origin] });
+    if (!granted) throw new Error("Разрешите расширению доступ к TextMate Global.");
+  }
+
+  if (data.runMode === "cloud" && data.cloudProvider === "openai-official") {
+    if (!data.officialOpenaiApiKey) throw new Error("Введите OpenAI API-ключ.");
+    if (!data.officialOpenaiFastModel || !data.officialOpenaiQualityModel) {
+      throw new Error("Укажите быструю и качественную OpenAI-модели.");
+    }
+  }
+
+  if (data.runMode === "cloud" && data.cloudProvider === "gemini" && !data.geminiApiKey) {
+    throw new Error("Введите Gemini API-ключ.");
+  }
+
+  if (data.runMode === "cloud" && data.cloudProvider === "openai-compatible") {
     if (!data.openaiBaseUrl) throw new Error("Введите адрес OpenAI-compatible API.");
     if (!data.openaiFastModel || !data.openaiQualityModel) throw new Error("Укажите быструю и качественную модели.");
     const origin = new URL(data.openaiBaseUrl).origin + "/*";

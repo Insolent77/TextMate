@@ -11,7 +11,9 @@
     const value = await chrome.storage.local.get([
       "runMode", "cloudProvider", "aiProvider",
       "geminiApiKey", "geminiFastModel", "geminiQualityModel", "geminiModel",
-      "openaiBaseUrl", "openaiApiKey", "openaiFastModel", "openaiQualityModel"
+      "officialOpenaiApiKey", "officialOpenaiFastModel", "officialOpenaiQualityModel",
+      "openaiBaseUrl", "openaiApiKey", "openaiFastModel", "openaiQualityModel",
+      "textmateCloudUrl", "textmateClientId"
     ]);
 
     // Backward compatibility with v0.4.x settings.
@@ -203,7 +205,7 @@
     return `${value}/chat/completions`;
   }
 
-  async function openAiChat({ system, user, quality = "fast", temperature = 0.1 }) {
+  async function openAiCompatibleChat({ system, user, quality = "fast", temperature = 0.1 }) {
     const s = await settings();
     const model = (quality === "quality" ? s.openaiQualityModel : s.openaiFastModel) || s.openaiFastModel || s.openaiQualityModel;
     if (!model) throw new Error("Укажите модель OpenAI-compatible API.");
@@ -229,26 +231,237 @@
     return { text, model, provider: "openai-compatible" };
   }
 
+
+  const OPENAI_API_URL = "https://api.openai.com/v1/chat/completions";
+  const DEFAULT_OPENAI_FAST_MODEL = "gpt-5.6-luna";
+  const DEFAULT_OPENAI_QUALITY_MODEL = "gpt-5.6-terra";
+
+  function jsonSchemaForOpenAi(value) {
+    if (Array.isArray(value)) return value.map(jsonSchemaForOpenAi);
+    if (!value || typeof value !== "object") return value;
+    const result = {};
+    for (const [key, item] of Object.entries(value)) {
+      result[key] =
+        key === "type" && typeof item === "string"
+          ? item.toLowerCase()
+          : jsonSchemaForOpenAi(item);
+    }
+    return result;
+  }
+
+  async function officialOpenAiChat({
+    system,
+    user,
+    schema,
+    quality = "fast",
+    temperature = 0.1
+  }) {
+    const s = await settings();
+    if (!s.officialOpenaiApiKey) {
+      throw new Error("Укажите OpenAI API-ключ в настройках расширения.");
+    }
+
+    const model =
+      (quality === "quality"
+        ? s.officialOpenaiQualityModel
+        : s.officialOpenaiFastModel) ||
+      (quality === "quality"
+        ? DEFAULT_OPENAI_QUALITY_MODEL
+        : DEFAULT_OPENAI_FAST_MODEL);
+
+    const body = {
+      model,
+      messages: [
+        ...(String(system || "").trim()
+          ? [{ role: "system", content: String(system) }]
+          : []),
+        { role: "user", content: String(user || "") }
+      ],
+      stream: false
+    };
+
+    // Некоторые reasoning-модели могут не принимать temperature.
+    if (!/^gpt-5/i.test(model)) {
+      body.temperature = temperature;
+    }
+
+    if (schema) {
+      body.response_format = {
+        type: "json_schema",
+        json_schema: {
+          name: "textmate_response",
+          strict: true,
+          schema: jsonSchemaForOpenAi(schema)
+        }
+      };
+    }
+
+    const response = await fetchWithTimeout(OPENAI_API_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${s.officialOpenaiApiKey}`
+      },
+      body: JSON.stringify(body)
+    }, 45000);
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      const code = payload?.error?.code || "";
+      const message = payload?.error?.message || `Ошибка OpenAI API (${response.status})`;
+
+      if (/unsupported_country_region|country|region/i.test(`${code} ${message}`)) {
+        throw new Error(
+          "OpenAI отклонил запрос из-за региональных ограничений API. Используйте TextMate Global или другой доступный провайдер."
+        );
+      }
+
+      throw new Error(message);
+    }
+
+    const text =
+      payload?.choices?.[0]?.message?.content ??
+      payload?.output_text ??
+      "";
+
+    if (!String(text || "").trim()) {
+      throw new Error("OpenAI вернул пустой ответ.");
+    }
+
+    return {
+      text: String(text).trim(),
+      model: payload?.model || model,
+      provider: "openai"
+    };
+  }
+
+  async function ensureTextMateClientId(current) {
+    if (current) return current;
+
+    const id =
+      globalThis.crypto?.randomUUID?.() ||
+      `tm-${Date.now()}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`;
+
+    await chrome.storage.local.set({ textmateClientId: id });
+    return id;
+  }
+
+  function normalizeTextMateCloudUrl(url) {
+    const value = String(url || "").trim().replace(/\/+$/, "");
+    if (!value) {
+      throw new Error(
+        "TextMate Global ещё не настроен владельцем расширения. Укажите адрес Cloudflare Worker в расширенных настройках."
+      );
+    }
+    return /\/v1\/text$/i.test(value) ? value : `${value}/v1/text`;
+  }
+
+  async function textMateGlobalChat({
+    system,
+    user,
+    schema,
+    quality = "fast",
+    temperature = 0.1
+  }) {
+    const s = await settings();
+    const endpoint = normalizeTextMateCloudUrl(s.textmateCloudUrl);
+    const clientId = await ensureTextMateClientId(s.textmateClientId);
+
+    const response = await fetchWithTimeout(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-TextMate-Client-Id": clientId,
+        "X-TextMate-Version": "0.9.0"
+      },
+      body: JSON.stringify({
+        system: String(system || ""),
+        user: String(user || ""),
+        quality,
+        temperature,
+        schema: schema || null
+      })
+    }, 45000);
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error("Достигнут лимит TextMate Global. Попробуйте немного позже.");
+      }
+      throw new Error(payload?.error || `Ошибка TextMate Global (${response.status})`);
+    }
+
+    const text = String(payload?.text || "").trim();
+    if (!text) throw new Error("TextMate Global вернул пустой ответ.");
+
+    return {
+      text,
+      model: payload?.model || "Workers AI",
+      provider: "textmate-global"
+    };
+  }
+
   async function chat(request) {
     const s = await settings();
     if (s.runMode === "local") return ollamaChat(request);
-    if (s.cloudProvider === "openai") return openAiChat(request);
+
+    if (s.cloudProvider === "textmate") {
+      return textMateGlobalChat(request);
+    }
+
+    if (s.cloudProvider === "openai-official") {
+      return officialOpenAiChat(request);
+    }
+
+    // "openai" оставляем как legacy-значение v0.8.x.
+    if (s.cloudProvider === "openai-compatible" || s.cloudProvider === "openai") {
+      return openAiCompatibleChat(request);
+    }
+
     return geminiChat(request);
   }
 
   async function testCloud() {
     const s = await settings();
-    if (s.cloudProvider === "openai") {
-      const result = await openAiChat({
-        system: "Ответь строго словом OK.", user: "Проверка соединения", quality: "fast", temperature: 0
+
+    if (s.cloudProvider === "textmate") {
+      const result = await textMateGlobalChat({
+        system: "Верни только слово OK.",
+        user: "Проверка соединения TextMate Global.",
+        quality: "fast",
+        temperature: 0
+      });
+      return { provider: "TextMate Global", model: result.model };
+    }
+
+    if (s.cloudProvider === "openai-official") {
+      const result = await officialOpenAiChat({
+        system: "Верни только слово OK.",
+        user: "Проверка соединения OpenAI API.",
+        quality: "fast",
+        temperature: 0
+      });
+      return { provider: "OpenAI", model: result.model };
+    }
+
+    if (s.cloudProvider === "openai-compatible" || s.cloudProvider === "openai") {
+      const result = await openAiCompatibleChat({
+        system: "Ответь строго словом OK.",
+        user: "Проверка соединения",
+        quality: "fast",
+        temperature: 0
       });
       return { provider: "OpenAI-compatible", model: result.model };
     }
+
     const result = await geminiChat({
       system: "Ответь JSON объектом с полем status.",
       user: "Верни status=OK",
       schema: { type: "OBJECT", properties: { status: { type: "STRING" } }, required: ["status"] },
-      quality: "fast", temperature: 0
+      quality: "fast",
+      temperature: 0
     });
     return { provider: "Gemini", model: result.model };
   }

@@ -23,3 +23,36 @@ a { color: #1a73e8; }.hidden { display: none !important; }
 .model-grid > div { padding: 10px 12px; border: 1px solid #e0e4ea; border-radius: 8px; background: white; }.model-grid span { display: block; color: #5f6368; font-size: 12px; margin-bottom: 4px; }
 code { display: inline-block; padding: 3px 7px; border-radius: 5px; background: #e5eaf2; font-family: Consolas, monospace; }
 @media (max-width: 560px) { .model-grid { grid-template-columns: 1fr; } main { margin: 16px auto; padding: 20px; } }
+
+
+.providerHelp {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 6px 0 14px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.providerHelp a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.providerHelp a:hover {
+  text-decoration: underline;
+}
+
+.providerHelp span {
+  opacity: .78;
+}
+
+.providerHelpStack {
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 5px;
+}

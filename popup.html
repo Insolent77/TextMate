@@ -13,7 +13,7 @@
         <h1>TextMate</h1>
         <p>AI-помощник для текста</p>
       </div>
-      <span class="version">v0.8.1</span>
+      <span class="version">v0.9.1</span>
     </header>
 
     <section class="card">
@@ -39,8 +39,10 @@
       <div id="cloudSummary" class="hidden">
         <label class="label compact" for="cloudProvider">Провайдер</label>
         <select id="cloudProvider">
+          <option value="textmate">🌐 TextMate Global</option>
+          <option value="openai-official">OpenAI API</option>
           <option value="gemini">Gemini API</option>
-          <option value="openai">OpenAI-compatible</option>
+          <option value="openai-compatible">OpenAI-compatible</option>
         </select>
         <div id="cloudModels" class="summary"></div>
       </div>
