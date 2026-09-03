@@ -1,8 +1,12 @@
 # TextMate
 
+[Русский](#русский) | [English](#english)
+
+## Русский
+
 TextMate — расширение для Chrome для работы с выделенным текстом с помощью ИИ.
 
-## Возможности
+### Возможности
 
 - исправление орфографии, пунктуации и грамматики;
 - перевод на русский язык;
@@ -18,11 +22,11 @@ TextMate — расширение для Chrome для работы с выде�
 - облачный режим через Gemini или OpenAI-compatible API;
 - отдельные адаптеры для Google Docs, Google Sheets, Word Online, Notion, Gmail и Telegram Web;
 - кэш одинаковых запросов;
-- гибрид локальных моделей: qwen3:0.6b для быстрых действий и qwen3:1.7b для редактирования/перевода.
+- гибрид локальных моделей: `qwen3:0.6b` для быстрых действий и `qwen3:1.7b` для редактирования и перевода.
 
 Автопроверка при вводе текста пока не используется: все действия запускаются только пользователем.
 
-## Установка для разработки
+### Установка для разработки
 
 1. Скачайте или клонируйте репозиторий.
 2. Откройте `chrome://extensions`.
@@ -31,7 +35,7 @@ TextMate — расширение для Chrome для работы с выде�
 5. Выберите папку репозитория.
 6. После обновления расширения обновите уже открытые вкладки через `F5`.
 
-## Локальный режим
+### Локальный режим
 
 Установите Ollama и модели:
 
@@ -42,7 +46,7 @@ ollama pull qwen3:1.7b
 
 Если `qwen3:1.7b` недоступна, TextMate автоматически использует `qwen3:0.6b`.
 
-## Облачный режим
+### Облачный режим
 
 Поддерживаются:
 
@@ -52,6 +56,66 @@ ollama pull qwen3:1.7b
 
 API-ключи не находятся в исходном коде. Пользователь вводит их в настройках расширения, после чего они сохраняются локально через `chrome.storage.local`.
 
-## Версия
+### Версия
 
 Текущая версия: **0.5.2**.
+
+---
+
+## English
+
+TextMate is a Chrome extension for AI-powered work with selected text directly on web pages and in online editors.
+
+### Features
+
+- spelling, punctuation and grammar correction;
+- translation to Russian;
+- text simplification;
+- text shortening;
+- more polite wording;
+- more formal wording;
+- 3 rephrasing alternatives;
+- configurable quick actions;
+- Chrome context menu integration;
+- optional automatic copying of results;
+- local mode powered by Ollama;
+- cloud mode powered by Gemini or any OpenAI-compatible API;
+- dedicated adapters for Google Docs, Google Sheets, Word Online, Notion, Gmail and Telegram Web;
+- caching for repeated requests;
+- hybrid local models: `qwen3:0.6b` for fast transformations and `qwen3:1.7b` for correction and translation.
+
+Automatic checking while typing is not enabled yet. Every action is started manually by the user.
+
+### Development installation
+
+1. Download or clone this repository.
+2. Open `chrome://extensions`.
+3. Enable **Developer mode**.
+4. Click **Load unpacked**.
+5. Select the repository folder.
+6. After reloading or updating the extension, refresh already opened pages with `F5`.
+
+### Local mode
+
+Install Ollama and the models:
+
+```powershell
+ollama pull qwen3:0.6b
+ollama pull qwen3:1.7b
+```
+
+If `qwen3:1.7b` is unavailable, TextMate automatically falls back to `qwen3:0.6b`.
+
+### Cloud mode
+
+Supported options:
+
+- Gemini API;
+- OpenAI-compatible API;
+- your own compatible backend.
+
+API keys are not hardcoded in the source code. Users enter them in the extension settings, and they are stored locally through `chrome.storage.local`.
+
+### Version
+
+Current version: **0.5.2**.
