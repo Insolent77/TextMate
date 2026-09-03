@@ -1,0 +1,29 @@
+name: Materialize content script
+
+on:
+  push:
+    paths:
+      - '.build/content.js.gz.b64'
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore content.js
+        shell: bash
+        run: |
+          base64 -d .build/content.js.gz.b64 | gzip -d > content.js
+          rm -rf .build
+          rm -f .github/workflows/materialize-content.yml
+      - name: Commit restored source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Add content script from TextMate v0.5.2"
+          git push
