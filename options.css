@@ -1,0 +1,25 @@
+:root { color-scheme: light; font: 15px/1.5 Arial, sans-serif; color: #202124; background: #f5f7fa; }
+* { box-sizing: border-box; }
+body { margin: 0; }
+main { width: min(700px, calc(100% - 32px)); margin: 44px auto; background: #fff; border: 1px solid #e2e5e9; border-radius: 14px; padding: 28px; box-shadow: 0 8px 30px rgba(20,30,45,.08); }
+h1 { font-size: 26px; margin: 0 0 8px; }
+h2 { font-size: 18px; margin: 28px 0 8px; }
+h3 { font-size: 16px; margin: 0 0 5px; }
+.intro, .muted { color: #5f6368; }
+.intro { margin: 0 0 24px; }
+label { display: block; font-weight: 600; margin: 16px 0 7px; }
+input, select { width: 100%; border: 1px solid #cfd4dc; border-radius: 8px; padding: 11px 12px; font: inherit; background: #fff; }
+input:focus, select:focus { outline: 2px solid #b6d3ff; border-color: #1a73e8; }
+.key-row { display: flex; gap: 8px; }.key-row input { flex: 1; }.key-row button { flex: 0 0 auto; }
+button { border: 1px solid #cfd4dc; border-radius: 8px; padding: 10px 14px; background: #fff; font: 600 14px Arial, sans-serif; cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; }.primary { color: #fff; background: #1a73e8; border-color: #1a73e8; }
+.actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
+#status { min-height: 23px; margin: 12px 0 0; color: #188038; }#status.error { color: #c5221f; }
+section { border-top: 1px solid #e5e7eb; margin-top: 24px; }
+a { color: #1a73e8; }.hidden { display: none !important; }
+.provider-settings { margin-top: 14px; }.card { border: 1px solid #e2e5e9; border-radius: 11px; padding: 16px; background: #fafbfc; }
+.notice { margin-top: 12px; padding: 12px 14px; border-radius: 8px; background: #f1f6ff; color: #3c4043; }
+.notice p { margin: 8px 0 0; }.model-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 13px; }
+.model-grid > div { padding: 10px 12px; border: 1px solid #e0e4ea; border-radius: 8px; background: white; }.model-grid span { display: block; color: #5f6368; font-size: 12px; margin-bottom: 4px; }
+code { display: inline-block; padding: 3px 7px; border-radius: 5px; background: #e5eaf2; font-family: Consolas, monospace; }
+@media (max-width: 560px) { .model-grid { grid-template-columns: 1fr; } main { margin: 16px auto; padding: 20px; } }
