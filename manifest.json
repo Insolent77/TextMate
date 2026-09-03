@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "TextMate",
-  "version": "0.9.1",
+  "version": "0.9.2",
   "description": "TextMate: исправление, перевод и переписывание текста через Ollama, TextMate Global, OpenAI, Gemini или без AI.",
   "permissions": [
     "storage",
