@@ -16,6 +16,8 @@ TextMate — расширение для Chrome для работы с выде�
 - официальный стиль;
 - 3 варианта переформулировки;
 - настраиваемые быстрые действия;
+- компактное popup-окно по клику на иконку расширения;
+- быстрый выбор локального/облачного режима прямо в popup;
 - контекстное меню Chrome;
 - автокопирование результата;
 - локальный режим через Ollama;
@@ -25,6 +27,19 @@ TextMate — расширение для Chrome для работы с выде�
 - гибрид локальных моделей: `qwen3:0.6b` для быстрых действий и `qwen3:1.7b` для редактирования и перевода.
 
 Автопроверка при вводе текста пока не используется: все действия запускаются только пользователем.
+
+### Popup и расширенные настройки
+
+Обычный клик по иконке **TextMate** открывает компактное окно, где можно:
+
+- переключить локальный/облачный режим;
+- выбрать облачного провайдера;
+- посмотреть используемые модели;
+- включить нужные быстрые действия;
+- включить автокопирование;
+- проверить подключение.
+
+API-ключи и дополнительные параметры остаются на странице **«Расширенные настройки»**.
 
 ### Установка для разработки
 
@@ -54,11 +69,11 @@ ollama pull qwen3:1.7b
 - OpenAI-compatible API;
 - собственный совместимый backend.
 
-API-ключи не находятся в исходном коде. Пользователь вводит их в настройках расширения, после чего они сохраняются локально через `chrome.storage.local`.
+API-ключи не находятся в исходном коде. Пользователь вводит их в расширенных настройках расширения, после чего они сохраняются локально через `chrome.storage.local`.
 
 ### Версия
 
-Текущая версия: **0.5.2**.
+Текущая версия: **0.6.0**.
 
 ---
 
@@ -76,6 +91,8 @@ TextMate is a Chrome extension for AI-powered work with selected text directly o
 - more formal wording;
 - 3 rephrasing alternatives;
 - configurable quick actions;
+- compact extension popup opened by clicking the TextMate icon;
+- quick local/cloud mode switching directly from the popup;
 - Chrome context menu integration;
 - optional automatic copying of results;
 - local mode powered by Ollama;
@@ -85,6 +102,19 @@ TextMate is a Chrome extension for AI-powered work with selected text directly o
 - hybrid local models: `qwen3:0.6b` for fast transformations and `qwen3:1.7b` for correction and translation.
 
 Automatic checking while typing is not enabled yet. Every action is started manually by the user.
+
+### Popup and advanced settings
+
+Clicking the **TextMate** extension icon now opens a compact popup where you can:
+
+- switch between local and cloud modes;
+- choose a cloud provider;
+- see the active models;
+- configure quick actions;
+- enable automatic copying;
+- test the current connection.
+
+API keys and advanced provider parameters remain available through **Advanced settings**.
 
 ### Development installation
 
@@ -114,8 +144,8 @@ Supported options:
 - OpenAI-compatible API;
 - your own compatible backend.
 
-API keys are not hardcoded in the source code. Users enter them in the extension settings, and they are stored locally through `chrome.storage.local`.
+API keys are not hardcoded in the source code. Users enter them in the advanced extension settings, and they are stored locally through `chrome.storage.local`.
 
 ### Version
 
-Current version: **0.5.2**.
+Current version: **0.6.0**.
