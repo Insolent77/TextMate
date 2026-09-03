@@ -14,6 +14,7 @@
       "openaiBaseUrl", "openaiApiKey", "openaiFastModel", "openaiQualityModel"
     ]);
 
+    // Backward compatibility with v0.4.x settings.
     const runMode = value.runMode || (value.aiProvider === "gemini" ? "cloud" : "local");
     const cloudProvider = value.cloudProvider || "gemini";
     return { ...value, runMode, cloudProvider };
@@ -80,6 +81,7 @@
 
   function warmLocalModels() {
     warmModel(FAST_OLLAMA_MODEL).catch(() => {});
+    // Quality model is warmed independently and never blocks an action.
     warmModel(QUALITY_OLLAMA_MODEL).catch(() => {});
   }
 
@@ -113,6 +115,8 @@
   }) {
     const model = await resolveOllamaModel(quality);
 
+    // Все провайдеры используют единый интерфейс system + user.
+    // Для обратной совместимости также принимаем готовый messages[].
     const normalizedMessages = Array.isArray(messages) && messages.length
       ? messages
       : [
@@ -147,7 +151,11 @@
       throw new Error(payload?.error || `Ошибка Ollama (${response.status})`);
     }
 
-    const answer = payload?.message?.content ?? payload?.response ?? "";
+    const answer =
+      payload?.message?.content ??
+      payload?.response ??
+      "";
+
     const resultText = String(answer || "").trim();
 
     if (!resultText) {
@@ -175,8 +183,10 @@
         contents: [{ role: "user", parts: [{ text: user }] }],
         generationConfig: {
           temperature,
-          responseMimeType: "application/json",
-          responseSchema: schema
+          ...(schema ? {
+            responseMimeType: "application/json",
+            responseSchema: schema
+          } : {})
         }
       })
     }, 30000);

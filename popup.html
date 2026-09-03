@@ -13,19 +13,27 @@
         <h1>TextMate</h1>
         <p>AI-помощник для текста</p>
       </div>
-      <span class="version">v0.7.0</span>
+      <span class="version">v0.8.1</span>
     </header>
 
     <section class="card">
       <label class="label" for="runMode">Режим работы</label>
       <select id="runMode">
-        <option value="local">💻 Локальный — Ollama</option>
-        <option value="cloud">☁ Облачный</option>
+        <option value="local">💻 Локальный AI — Ollama</option>
+        <option value="cloud">☁ Облачный AI</option>
+        <option value="rules">✓ Без AI — русский язык</option>
       </select>
 
       <div id="localSummary" class="summary">
         <div><span>Быстрая</span><strong>qwen3:0.6b</strong></div>
         <div><span>Качественная</span><strong>qwen3:1.7b</strong></div>
+      </div>
+
+      <div id="rulesSummary" class="summary hidden">
+        <div><span>Обработка</span><strong>Локальный словарь</strong></div>
+        <div><span>Язык</span><strong>Русский</strong></div>
+        <div><span>Действие</span><strong>Только редактирование</strong></div>
+        <div><span>Первый запуск</span><strong>Словарь ~4 МБ</strong></div>
       </div>
 
       <div id="cloudSummary" class="hidden">
@@ -37,12 +45,15 @@
         <div id="cloudModels" class="summary"></div>
       </div>
 
-      <button id="testConnection" class="secondary full" type="button">Проверить подключение</button>
+      <button id="testConnection" class="secondary full" type="button">
+        Проверить подключение
+      </button>
       <p id="connectionStatus" class="status" role="status"></p>
     </section>
 
-    <section class="card">
+    <section id="quickActionsCard" class="card">
       <div class="sectionTitle">Быстрые действия</div>
+      <p id="rulesActionsNote" class="status hidden">В режиме без AI доступно только «Редактировать».</p>
       <div class="checks">
         <label><input type="checkbox" data-action="edit"> Редактировать</label>
         <label><input type="checkbox" data-action="translate"> Перевод</label>
@@ -62,7 +73,10 @@
       </label>
     </section>
 
-    <button id="advancedSettings" class="primary full" type="button">Расширенные настройки</button>
+    <button id="advancedSettings" class="primary full" type="button">
+      Расширенные настройки
+    </button>
+
     <p id="saveStatus" class="saved">Настройки сохраняются автоматически</p>
   </main>
 

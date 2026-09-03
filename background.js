@@ -3,6 +3,7 @@ if (typeof importScripts === "function" && !globalThis.AITextProviders) {
     "compat.js",
     "background/logger.js",
     "background/cache.js",
+    "background/rules.js",
     "background/providers.js",
     "background/actions.js",
     "background/context-menu.js"
@@ -26,19 +27,45 @@ function withTimeout(promise, ms = REQUEST_TIMEOUT_MS) {
   ]);
 }
 
+async function warmLocalOnlyWhenNeeded() {
+  const { runMode } = await chrome.storage.local.get(["runMode"]);
+  if ((runMode || "local") === "local") {
+    AITextProviders.warmLocalModels();
+  }
+}
+
+async function correctByCurrentMode(text) {
+  const { runMode } = await chrome.storage.local.get(["runMode"]);
+  if (runMode === "rules") return TextMateRules.correct(text);
+  return AITextActions.correct(text);
+}
+
+async function ensureAiActionAllowed() {
+  const { runMode } = await chrome.storage.local.get(["runMode"]);
+  if (runMode === "rules") {
+    throw new Error("В режиме «Без AI» доступно только редактирование русского текста.");
+  }
+}
+
 chrome.runtime.onInstalled.addListener(async (details) => {
   const old = await chrome.storage.local.get(["runMode", "aiProvider", "geminiApiKey"]);
   if (!old.runMode) {
     await chrome.storage.local.set({ runMode: old.aiProvider === "gemini" || old.geminiApiKey ? "cloud" : "local" });
   }
-  AITextContextMenu.create();
-  AITextProviders.warmLocalModels();
+  await AITextContextMenu.create();
+  warmLocalOnlyWhenNeeded();
   if (details.reason === "install") chrome.runtime.openOptionsPage();
 });
 
 chrome.runtime.onStartup.addListener(() => {
   AITextContextMenu.create();
-  AITextProviders.warmLocalModels();
+  warmLocalOnlyWhenNeeded();
+});
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local" || !changes.runMode) return;
+  AITextContextMenu.create();
+  if (changes.runMode.newValue === "local") AITextProviders.warmLocalModels();
 });
 
 AITextContextMenu.install();
@@ -55,9 +82,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   if (message?.type === "TEST_CLOUD") task = AITextProviders.testCloud();
   if (message?.type === "TEST_OLLAMA") task = AITextProviders.testLocal(); // compatibility
   if (message?.type === "CLEAR_CACHE") task = AITextCache.clear().then(() => ({ cleared: true }));
-  if (message?.type === "CORRECT_TEXT") task = AITextActions.correct(message.text);
-  if (message?.type === "TRANSLATE_TEXT") task = AITextActions.translate(message.text);
-  if (message?.type === "TRANSFORM_TEXT") task = AITextActions.transform(message.text, message.action);
+  if (message?.type === "CORRECT_TEXT") task = correctByCurrentMode(message.text);
+  if (message?.type === "TRANSLATE_TEXT") {
+    task = ensureAiActionAllowed().then(() => AITextActions.translate(message.text));
+  }
+  if (message?.type === "TRANSFORM_TEXT") {
+    task = ensureAiActionAllowed().then(() => AITextActions.transform(message.text, message.action));
+  }
 
   if (!task) return false;
   withTimeout(task)

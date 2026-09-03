@@ -22,13 +22,18 @@
       console.warn("TextMate: не удалось очистить контекстное меню", error);
     }
 
+    const { runMode } = await chrome.storage.local.get(["runMode"]);
+    const rulesMode = runMode === "rules";
+
     chrome.contextMenus.create({
       id: "ai-text-tools",
-      title: "TextMate: работа с текстом",
+      title: rulesMode ? "TextMate: проверить русский текст" : "TextMate: работа с текстом",
       contexts: ["selection"]
     });
 
-    for (const [id, title] of ACTIONS) {
+    const actions = rulesMode ? ACTIONS.filter(([id]) => id === "edit") : ACTIONS;
+
+    for (const [id, title] of actions) {
       chrome.contextMenus.create({
         id: `ai-${id}`,
         parentId: "ai-text-tools",
@@ -46,10 +51,19 @@
       const text = String(info.selectionText || "").trim();
       if (!text || !tab?.id) return;
       try {
+        const { runMode } = await chrome.storage.local.get(["runMode"]);
         let result;
-        if (action === "edit") result = await AITextActions.correct(text);
-        else if (action === "translate") result = await AITextActions.translate(text);
-        else result = await AITextActions.transform(text, action);
+
+        if (runMode === "rules") {
+          if (action !== "edit") throw new Error("В режиме «Без AI» доступно только редактирование.");
+          result = await TextMateRules.correct(text);
+        } else if (action === "edit") {
+          result = await AITextActions.correct(text);
+        } else if (action === "translate") {
+          result = await AITextActions.translate(text);
+        } else {
+          result = await AITextActions.transform(text, action);
+        }
         await chrome.tabs.sendMessage(tab.id, { type: "SHOW_CONTEXT_RESULT", action, originalText: text, result });
       } catch (error) {
         await chrome.tabs.sendMessage(tab.id, {

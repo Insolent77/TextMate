@@ -1,135 +1,179 @@
 # TextMate
 
-[Русский](#русский) | [English](#english)
+**TextMate** — браузерное расширение для редактирования, перевода и переформулирования выделенного текста прямо на странице.
 
-## Русский
+Поддерживает локальный AI через Ollama, облачные модели и отдельную проверку русского текста без AI.
 
-TextMate — расширение для работы с выделенным текстом с помощью ИИ.
+## Возможности
 
-### Поддерживаемые браузеры
-
-| Браузер | Сборка |
-|---|---|
-| Google Chrome | Chromium |
-| Microsoft Edge | Chromium |
-| Opera | Chromium |
-| Mozilla Firefox | Firefox |
-
-Яндекс Браузер отдельно не поддерживается.
-
-### Возможности
-
-- исправление орфографии, пунктуации и грамматики;
-- перевод на русский язык;
+- исправление орфографии, пунктуации, грамматики и стилистики;
+- перевод выделенного текста на русский язык;
 - упрощение и сокращение текста;
-- вежливый и официальный стиль;
-- несколько вариантов переформулировки;
-- настраиваемые быстрые действия;
-- popup по клику на иконку TextMate;
+- более вежливый или официальный стиль;
+- 3 варианта переформулировки;
+- работа с обычным текстом и редактируемыми полями;
 - контекстное меню браузера;
-- автокопирование результата;
-- локальный режим через Ollama;
-- облачный режим через Gemini или OpenAI-compatible API;
-- адаптеры для Google Docs, Google Sheets, Word Online, Notion, Gmail и Telegram Web;
-- кэш одинаковых запросов;
-- локальные модели `qwen3:0.6b` и `qwen3:1.7b`.
+- автоматическое копирование результата;
+- настройка быстрых действий;
+- Chrome / Chromium и Firefox.
 
-### Сборки
+## Режимы работы
 
-Chrome, Edge и Opera используют один ZIP:
+### 1. Локальный AI — Ollama
 
-`TextMate-v0.7.0-Chromium.zip`
+Текст обрабатывается локально на компьютере пользователя.
 
-Firefox использует отдельный ZIP:
-
-`TextMate-v0.7.0-Firefox.zip`
-
-Исходный код:
-
-`TextMate-v0.7.0-Source.zip`
-
-### Сборка из исходников
-
-```bash
-python build.py
-```
-
-Готовые файлы появятся в папке `dist/`.
-
-### Локальный режим
+Используются две модели:
 
 ```powershell
 ollama pull qwen3:0.6b
 ollama pull qwen3:1.7b
 ```
 
-### Версия
+- `qwen3:0.6b` — быстрые преобразования;
+- `qwen3:1.7b` — редактирование и перевод;
+- если `1.7b` недоступна, используется `0.6b`.
 
-Текущая версия: **0.7.0**.
+### 2. Облачный AI
 
----
+Поддерживаются:
 
-## English
+- Gemini API;
+- OpenAI-compatible API;
+- собственный совместимый сервер.
 
-TextMate is an AI-powered browser extension for working with selected text.
+Можно отдельно указать быструю и качественную модели.
 
-### Supported browsers
+### 3. Без AI — русский язык
 
-| Browser | Package |
-|---|---|
-| Google Chrome | Chromium |
-| Microsoft Edge | Chromium |
-| Opera | Chromium |
-| Mozilla Firefox | Firefox |
+Начиная с **v0.8.1** TextMate умеет проверять русский текст без языковой модели.
 
-Yandex Browser is not maintained as a separate supported target.
+Используется открытый русский Hunspell-словарь LibreOffice.
 
-### Features
+Режим умеет:
 
-- spelling, punctuation and grammar correction;
-- translation to Russian;
-- text simplification and shortening;
-- polite and formal rewriting;
-- multiple rephrasing alternatives;
-- configurable quick actions;
-- compact TextMate popup;
-- browser context menu integration;
-- optional automatic result copying;
-- local Ollama mode;
-- cloud mode using Gemini or any OpenAI-compatible API;
-- adapters for Google Docs, Google Sheets, Word Online, Notion, Gmail and Telegram Web;
-- repeated-request caching;
-- local `qwen3:0.6b` and `qwen3:1.7b` models.
+- находить орфографические опечатки по словарю;
+- исправлять уверенные опечатки;
+- исправлять типичные ошибки;
+- убирать лишние пробелы;
+- исправлять базовые ошибки пунктуации;
+- исправлять регистр начала предложения;
+- удалять случайные повторы слов.
 
-### Packages
+При первом использовании скачиваются только файлы словаря `ru_RU.aff` и `ru_RU.dic` — около 4 МБ. Они сохраняются в IndexedDB расширения, после чего используется локальная копия.
 
-Chrome, Edge and Opera use:
+**Выделенный пользовательский текст в этом режиме никуда не отправляется.**
 
-`TextMate-v0.7.0-Chromium.zip`
+В режиме без AI доступно только действие **«Редактировать»**.
 
-Firefox uses:
+## Установка в Chrome / Chromium
 
-`TextMate-v0.7.0-Firefox.zip`
+1. Скачайте Chromium-сборку.
+2. Распакуйте ZIP.
+3. Откройте `chrome://extensions`.
+4. Включите **Режим разработчика**.
+5. Нажмите **Загрузить распакованное расширение**.
+6. Выберите папку TextMate.
 
-Source code:
+После обновления расширения обновите уже открытые вкладки через `F5`.
 
-`TextMate-v0.7.0-Source.zip`
+## Firefox
 
-### Build from source
+Для Firefox используется отдельный `manifest.firefox.json`.
+
+Собрать обе версии можно командой:
 
 ```bash
 python build.py
 ```
 
-Generated packages are placed in `dist/`.
+В `dist` появятся:
 
-### Local mode
-
-```powershell
-ollama pull qwen3:0.6b
-ollama pull qwen3:1.7b
+```text
+TextMate-vX.X.X-Chromium.zip
+TextMate-vX.X.X-Firefox.zip
 ```
 
-### Version
+## Управление
 
-Current version: **0.7.0**.
+Выделите текст на странице. Возле выделения появятся доступные действия.
+
+Основные действия:
+
+- **Редактировать**;
+- **Перевод**;
+- **⋯** — дополнительные действия.
+
+Дополнительные:
+
+- Упростить;
+- Сделать короче;
+- Сделать вежливее;
+- Сделать официальнее;
+- Переформулировать.
+
+Набор быстрых действий настраивается в popup расширения.
+
+## Горячие клавиши
+
+- `Alt + R` — заново обработать текущее выделение;
+- `Esc` — закрыть окно результата.
+
+## Поддерживаемые редакторы
+
+Есть отдельные адаптеры для:
+
+- Google Docs / Sheets;
+- Word Online;
+- Notion;
+- Gmail;
+- Telegram Web.
+
+На остальных сайтах используется универсальный адаптер.
+
+## Приватность
+
+Поведение зависит от выбранного режима:
+
+- **Без AI** — пользовательский текст не отправляется в AI или на сервер обработки;
+- **Ollama** — запросы идут только в локальный Ollama API;
+- **Облачный AI** — выделенный текст отправляется выбранному пользователем AI-провайдеру.
+
+API-ключи и настройки сохраняются в локальном хранилище расширения.
+
+## Русский словарь
+
+Источник: [LibreOffice Dictionaries — ru_RU](https://github.com/LibreOffice/dictionaries/tree/master/ru_RU).
+
+TextMate загружает только словарные данные `.aff` и `.dic`, а не удалённый JavaScript. Подробности — в `THIRD_PARTY_NOTICES.md`.
+
+## Структура проекта
+
+```text
+background.js
+background/
+  actions.js
+  cache.js
+  context-menu.js
+  logger.js
+  providers.js
+  rules.js
+content.js
+content/
+  adapters.js
+  runtime.js
+compat.js
+manifest.json
+manifest.firefox.json
+options.html
+options.css
+options.js
+popup.html
+popup.css
+popup.js
+build.py
+```
+
+## Версия
+
+Текущая версия: **0.8.1**.

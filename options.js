@@ -27,11 +27,20 @@ cloudProvider.addEventListener("change", updateVisibility);
 
 function updateVisibility() {
   const local = runMode.value === "local";
+  const cloud = runMode.value === "cloud";
+  const rules = runMode.value === "rules";
+
   $("#localSettings").classList.toggle("hidden", !local);
-  $("#cloudSettings").classList.toggle("hidden", local);
+  $("#cloudSettings").classList.toggle("hidden", !cloud);
+  $("#rulesSettings").classList.toggle("hidden", !rules);
+  $("#test").classList.toggle("hidden", rules);
+  $("#clearCache").classList.toggle("hidden", rules);
+
   const gemini = cloudProvider.value === "gemini";
   $("#geminiSettings").classList.toggle("hidden", !gemini);
   $("#openaiSettings").classList.toggle("hidden", gemini);
+
+  if (rules) showStatus("Режим без AI работает полностью офлайн.");
 }
 
 function togglePassword(inputSelector, button) {
@@ -55,6 +64,10 @@ $("#test").addEventListener("click", async (event) => {
   showStatus("Проверяю подключение…");
   try {
     await save();
+    if (runMode.value === "rules") {
+      showStatus("✓ Режим без AI готов. Подключение не требуется.");
+      return;
+    }
     const type = runMode.value === "local" ? "TEST_LOCAL" : "TEST_CLOUD";
     const response = await chrome.runtime.sendMessage({ type });
     if (!response?.ok) throw new Error(response?.error || "Проверка не удалась.");
@@ -78,7 +91,10 @@ async function save() {
   const data = {
     runMode: runMode.value,
     cloudProvider: cloudProvider.value,
-    aiProvider: runMode.value === "local" ? "ollama" : cloudProvider.value,
+    aiProvider:
+      runMode.value === "local" ? "ollama" :
+      runMode.value === "cloud" ? cloudProvider.value :
+      "rules",
     ollamaModel: "qwen3:0.6b",
     geminiApiKey: $("#geminiApiKey").value.trim(),
     geminiFastModel: $("#geminiFastModel").value.trim() || "gemini-3.6-flash",

@@ -7,7 +7,9 @@ const runMode = $("#runMode");
 const cloudProvider = $("#cloudProvider");
 const localSummary = $("#localSummary");
 const cloudSummary = $("#cloudSummary");
+const rulesSummary = $("#rulesSummary");
 const cloudModels = $("#cloudModels");
+const rulesActionsNote = $("#rulesActionsNote");
 const autoCopyResult = $("#autoCopyResult");
 const connectionStatus = $("#connectionStatus");
 const testConnection = $("#testConnection");
@@ -57,15 +59,27 @@ async function restore() {
 
 function updateModeUi() {
   const local = runMode.value === "local";
+  const cloud = runMode.value === "cloud";
+  const rules = runMode.value === "rules";
+
   localSummary.classList.toggle("hidden", !local);
-  cloudSummary.classList.toggle("hidden", local);
+  cloudSummary.classList.toggle("hidden", !cloud);
+  rulesSummary.classList.toggle("hidden", !rules);
+  testConnection.classList.toggle("hidden", rules);
+  rulesActionsNote.classList.toggle("hidden", !rules);
 
-  if (!local) {
-    renderCloudModels();
-  }
+  document.querySelectorAll("[data-action]").forEach((input) => {
+    const isEdit = input.dataset.action === "edit";
+    input.disabled = rules;
+    if (rules) input.checked = isEdit;
+  });
 
-  connectionStatus.textContent = "";
-  connectionStatus.className = "status";
+  if (cloud) renderCloudModels();
+
+  connectionStatus.textContent = rules
+    ? "Никаких подключений не требуется."
+    : "";
+  connectionStatus.className = rules ? "status success" : "status";
 }
 
 function renderCloudModels() {
@@ -94,7 +108,10 @@ function renderCloudModels() {
 runMode.addEventListener("change", async () => {
   await chrome.storage.local.set({
     runMode: runMode.value,
-    aiProvider: runMode.value === "local" ? "ollama" : cloudProvider.value
+    aiProvider:
+      runMode.value === "local" ? "ollama" :
+      runMode.value === "cloud" ? cloudProvider.value :
+      "rules"
   });
   updateModeUi();
 });
@@ -103,7 +120,10 @@ cloudProvider.addEventListener("change", async () => {
   settings.cloudProvider = cloudProvider.value;
   await chrome.storage.local.set({
     cloudProvider: cloudProvider.value,
-    aiProvider: runMode.value === "local" ? "ollama" : cloudProvider.value
+    aiProvider:
+      runMode.value === "local" ? "ollama" :
+      runMode.value === "cloud" ? cloudProvider.value :
+      "rules"
   });
   renderCloudModels();
 });
@@ -115,6 +135,8 @@ document.querySelectorAll("[data-action]").forEach((input) => {
 autoCopyResult.addEventListener("change", saveQuickSettings);
 
 async function saveQuickSettings() {
+  if (runMode.value === "rules") return;
+
   const quickTextActions = Array.from(document.querySelectorAll("[data-action]:checked"))
     .map((input) => input.dataset.action)
     .filter((action) => ACTIONS.includes(action));

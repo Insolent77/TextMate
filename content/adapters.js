@@ -146,6 +146,8 @@
     selection.element.focus();
     restoreRange(selection);
 
+    // Framework editors (Gmail, Notion, Telegram, Word) generally react better
+    // to the browser editing command than to direct DOM mutation.
     try {
       if (document.queryCommandSupported?.("insertText")) {
         const ok = document.execCommand("insertText", false, replacement);
@@ -156,6 +158,8 @@
       }
     } catch {}
 
+    // Google Docs can keep an internal document model that direct DOM edits corrupt.
+    // If the editor did not accept insertText, leave the document untouched.
     if (adapter.replaceMode === "command-only") return false;
 
     try {

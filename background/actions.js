@@ -49,20 +49,50 @@
     required: ["output", "alternatives"]
   };
 
-  function parseJson(text) {
-    const raw = String(text || "").trim();
-    if (!raw) throw new Error("Модель вернула пустой ответ.");
-    try { return JSON.parse(raw); } catch {}
-    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1];
-    if (fenced) {
-      try { return JSON.parse(fenced); } catch {}
-    }
+  function tryParseJson(text) {
+    let raw = String(text || "")
+      .replace(/^\uFEFF/, "")
+      .trim();
+
+    if (!raw) return null;
+
+    const candidates = [raw];
+
+    const fenced = raw.match(/```(?:json)?\s*([\s\S]*?)```/i)?.[1]?.trim();
+    if (fenced) candidates.push(fenced);
+
     const start = raw.indexOf("{");
     const end = raw.lastIndexOf("}");
     if (start >= 0 && end > start) {
-      try { return JSON.parse(raw.slice(start, end + 1)); } catch {}
+      candidates.push(raw.slice(start, end + 1));
     }
-    throw new Error("Не удалось разобрать ответ модели.");
+
+    for (const candidate of candidates) {
+      try {
+        return JSON.parse(candidate);
+      } catch {}
+
+      // Частые мелкие ошибки маленьких локальных моделей:
+      // trailing comma перед }/] и типографские кавычки.
+      const repaired = candidate
+        .replace(/[“”]/g, '"')
+        .replace(/[‘’]/g, "'")
+        .replace(/,\s*([}\]])/g, "$1");
+
+      try {
+        return JSON.parse(repaired);
+      } catch {}
+    }
+
+    return null;
+  }
+
+  function plainModelText(text) {
+    return String(text || "")
+      .trim()
+      .replace(/^```(?:text|markdown)?\s*/i, "")
+      .replace(/\s*```$/i, "")
+      .trim();
   }
 
   async function cached(action, text, quality, work) {
@@ -92,20 +122,43 @@
         temperature: 0,
         numPredict: 320,
         schema: correctionSchema,
-        system: "Ты профессиональный редактор русского языка. Исправляй только реальные орфографические, пунктуационные, грамматические и явные стилистические ошибки. Сохраняй смысл, тон, имена, факты, форматирование и абзацы. Не добавляй новую информацию. Верни только JSON вида {\"correctedText\":\"...\",\"errors\":[{\"original\":\"...\",\"correction\":\"...\",\"explanation\":\"...\"}]}",
+        system: "Ты профессиональный редактор русского языка. Исправляй только реальные орфографические, пунктуационные, грамматические и явные стилистические ошибки. Сохраняй смысл, тон, имена, факты, форматирование и абзацы. Не добавляй новую информацию. Верни только JSON вида {\"correctedText\":\"...\",\"errors\":[{\"original\":\"...\",\"correction\":\"...\",\"explanation\":\"...\"}]}.",
         user: `Проверь текст и верни исправленную версию и список правок.\n\nТЕКСТ:\n${text}`
       });
-      const parsed = parseJson(result.text);
-      if (typeof parsed.correctedText !== "string") throw new Error("Модель вернула исправление в неожиданном формате.");
+      const parsed = tryParseJson(result.text);
+
+      if (parsed && typeof parsed.correctedText === "string") {
+        return {
+          correctedText: parsed.correctedText,
+          errors: Array.isArray(parsed.errors) ? parsed.errors.slice(0, 100).map((item) => ({
+            original: String(item?.original ?? ""),
+            correction: String(item?.correction ?? ""),
+            explanation: String(item?.explanation ?? "")
+          })) : [],
+          model: result.model,
+          provider: result.provider
+        };
+      }
+
+      // Если модель нарушила JSON-формат, не падаем:
+      // повторяем запрос в максимально простом текстовом формате.
+      const fallback = await P.chat({
+        quality: "quality",
+        temperature: 0,
+        numPredict: 320,
+        system: "Ты профессиональный редактор русского языка. Исправь только реальные орфографические, пунктуационные, грамматические и явные стилистические ошибки. Сохрани смысл, тон, имена, факты, абзацы и форматирование. Не добавляй новую информацию. Верни ТОЛЬКО готовый исправленный текст без JSON, заголовков, пояснений и кавычек.",
+        user: `ТЕКСТ:\n${text}`
+      });
+
+      const correctedText = plainModelText(fallback.text);
+      if (!correctedText) throw new Error("Модель вернула пустой результат.");
+
       return {
-        correctedText: parsed.correctedText,
-        errors: Array.isArray(parsed.errors) ? parsed.errors.slice(0, 100).map((item) => ({
-          original: String(item?.original ?? ""),
-          correction: String(item?.correction ?? ""),
-          explanation: String(item?.explanation ?? "")
-        })) : [],
-        model: result.model,
-        provider: result.provider
+        correctedText,
+        errors: [],
+        model: fallback.model || result.model,
+        provider: fallback.provider || result.provider,
+        fallback: true
       };
     });
   }
@@ -121,14 +174,36 @@
         system: "Ты профессиональный переводчик. Определи язык исходного текста и переведи его на естественный русский язык. Сохраняй смысл, тон, структуру, абзацы, списки, имена, числа, ссылки и форматирование. Не добавляй факты. Верни только JSON вида {\"sourceLanguage\":\"...\",\"translation\":\"...\",\"notes\":[]}.",
         user: `Переведи текст на русский язык.\n\nТЕКСТ:\n${text}`
       });
-      const parsed = parseJson(result.text);
-      if (typeof parsed.translation !== "string") throw new Error("Модель вернула перевод в неожиданном формате.");
+      const parsed = tryParseJson(result.text);
+
+      if (parsed && typeof parsed.translation === "string") {
+        return {
+          sourceLanguage: String(parsed.sourceLanguage || "Автоопределение"),
+          translation: parsed.translation,
+          notes: Array.isArray(parsed.notes) ? parsed.notes.map(String).filter(Boolean).slice(0, 20) : [],
+          model: result.model,
+          provider: result.provider
+        };
+      }
+
+      const fallback = await P.chat({
+        quality: "quality",
+        temperature: 0,
+        numPredict: 320,
+        system: "Ты профессиональный переводчик. Переведи исходный текст на естественный русский язык. Сохрани смысл, тон, структуру, абзацы, списки, имена, числа, ссылки и форматирование. Не добавляй факты. Верни ТОЛЬКО готовый перевод без JSON, заголовков, пояснений и кавычек.",
+        user: `ТЕКСТ:\n${text}`
+      });
+
+      const translation = plainModelText(fallback.text);
+      if (!translation) throw new Error("Модель вернула пустой результат.");
+
       return {
-        sourceLanguage: String(parsed.sourceLanguage || "Автоопределение"),
-        translation: parsed.translation,
-        notes: Array.isArray(parsed.notes) ? parsed.notes.map(String).filter(Boolean).slice(0, 20) : [],
-        model: result.model,
-        provider: result.provider
+        sourceLanguage: "Автоопределение",
+        translation,
+        notes: [],
+        model: fallback.model || result.model,
+        provider: fallback.provider || result.provider,
+        fallback: true
       };
     });
   }
@@ -152,6 +227,7 @@
 
     if (numbered.length >= 2) return numbered.slice(0, 3);
 
+    // Fallback for models that put variants on one line separated with semicolons.
     const separated = raw.split(/\s*;\s*/).map((item) => item.trim()).filter(Boolean);
     return separated.length >= 2 ? separated.slice(0, 3) : [raw];
   }
@@ -166,6 +242,8 @@
         quality: "fast",
         temperature: isRephrase ? 0.45 : 0.05,
         numPredict: isRephrase ? 180 : 120,
+        // В быстрых действиях намеренно НЕ используем JSON schema.
+        // Маленькие локальные модели отвечают так быстрее и стабильнее.
         system: isRephrase
           ? `${TRANSFORMS[action]} Не добавляй факты от себя. Верни ровно 3 варианта, каждый с новой строки. Без пояснений, заголовков и JSON.`
           : `${TRANSFORMS[action]} Не добавляй факты от себя. Верни только готовый переписанный текст. Без пояснений, кавычек, заголовков и JSON.`,
